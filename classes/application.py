@@ -104,7 +104,7 @@ class Application(tk.Frame):
 
     def create_button(self):
         button_frame = tk.Frame(self.master)
-        button_frame.pack(padx=2, pady=5)
+        button_frame.pack(fill='x', padx=2, pady=5)
         # ボタン配置
         button_search = tk.Button(
             button_frame, text=u'検索', bg='#D4E6F1',
@@ -116,7 +116,7 @@ class Application(tk.Frame):
             button_frame, text=u'終了', bg='#ABB2B9',
             command=None
         )
-        button_exit.pack(side='left', padx=10)
+        button_exit.pack(side='right', padx=10)
 
     def create_result(self):
         result_frame = tk.Frame(self.master)
