@@ -5,6 +5,17 @@ from tkinter import font
 from tkinter import ttk
 
 class Application(tk.Frame):
+    # プライベート変数
+    _flag_apike = None
+    _flag_idpw = None
+
+    _checkbox_apikey = None
+    _checkbox_idpw = None
+
+    _entry_apikey = None
+    _entry_id = None
+    _entry_pw = None
+
     def __init__(self, master=None, title=None):
         super().__init__(master)
         self.master = master
@@ -79,17 +90,19 @@ class Application(tk.Frame):
             text=u'apikey',
             padx=10, pady=10,
         )
-        checkbox_apikey = tk.Checkbutton(
+        self._flag_apike = tk.BooleanVar()
+        self._checkbox_apikey = tk.Checkbutton(
             apikey_inputarea_labelframe, 
-            text=u'API Key', command=None
+            text=u'API Key', var=self._flag_apike,
+            command=self._command_checkbutton
         )
-        apikey_inputarea_labelframe['labelwidget'] = checkbox_apikey
+        apikey_inputarea_labelframe['labelwidget'] = self._checkbox_apikey
         apikey_inputarea_labelframe.pack(anchor=tk.W)
 
         label_apikey = tk.Label(apikey_inputarea_labelframe, text=u'API Key：')
         label_apikey.pack(side='left')
-        entry_apikey = tk.Entry(apikey_inputarea_labelframe, width=40)
-        entry_apikey.pack(side='left')
+        self._entry_apikey = tk.Entry(apikey_inputarea_labelframe, width=40)
+        self._entry_apikey.pack(side='left')
 
         #### ID/PW入力エリア
         ##### ID/PWパターン
@@ -98,21 +111,23 @@ class Application(tk.Frame):
             text=u'id/pw',
             padx=10, pady=10,
         )
-        checkbox_idpw = tk.Checkbutton(
+        self._flag_idpw = tk.BooleanVar()
+        self._checkbox_idpw = tk.Checkbutton(
             idpw_inputarea_labelframe,
-            text=u'ID/PW', command=None
+            text=u'ID/PW', var=self._flag_idpw,
+            command=self._command_checkbutton
         )
-        idpw_inputarea_labelframe['labelwidget'] = checkbox_idpw
+        idpw_inputarea_labelframe['labelwidget'] = self._checkbox_idpw
         idpw_inputarea_labelframe.pack(anchor=tk.W)
 
         label_id = tk.Label(idpw_inputarea_labelframe, text=u'ID：')
-        entry_id = tk.Entry(idpw_inputarea_labelframe, width=20)
+        self._entry_id = tk.Entry(idpw_inputarea_labelframe, width=20)
         label_pw = tk.Label(idpw_inputarea_labelframe, text=u'PW：')
-        entry_pw = tk.Entry(idpw_inputarea_labelframe, width=20)
+        self._entry_pw = tk.Entry(idpw_inputarea_labelframe, width=20)
         label_id.pack(side='left')
-        entry_id.pack(side='left')
+        self._entry_id.pack(side='left')
         label_pw.pack(side='left')
-        entry_pw.pack(side='left')
+        self._entry_pw.pack(side='left')
 
     def create_button(self):
         button_frame = tk.Frame(self.master)
@@ -126,7 +141,7 @@ class Application(tk.Frame):
 
         button_exit = tk.Button(
             button_frame, text=u'終了', bg='#ABB2B9',
-            command=self.master.destroy
+            command=self.command_exit
         )
         button_exit.pack(side='right', padx=10)
 
@@ -157,8 +172,45 @@ class Application(tk.Frame):
             values=('PJ-NAME_0001', '【インフラ】テスト環境構築', '2020/04/05', '太郎', '花子')
         )
 
+    # ----------
+    # 以下は、各パーツの動作
+    def command_exit(self):
+        self.master.quit()
 
+    def _toggle_apikey_normal(self):
+        # apikey選択状態なので、apikeyを活性化
+        self._entry_apikey.configure(state='normal')
+        self._checkbox_apikey.configure(state='normal')
 
+    def _toggle_apikey_disabled(self):
+        # apiley非選択状態なので、apikeyを非活性
+        self._entry_apikey.configure(state='disabled')
+        self._checkbox_apikey.configure(state='disabled')
+
+    def _toggle_idpw_normal(self):
+        self._entry_id.configure(state='normal')
+        self._entry_pw.configure(state='normal')
+        self._checkbox_idpw.configure(state='normal')
+
+    def _toggle_idpw_disabled(self):
+        self._entry_id.configure(state='disabled')
+        self._entry_pw.configure(state='disabled')
+        self._checkbox_idpw.configure(state='disabled')
+
+    def _command_checkbutton(self):
+        if(self._flag_apike.get() == False and self._flag_idpw.get() == False):
+            self._toggle_apikey_normal()
+            self._toggle_idpw_normal()
+        elif(self._flag_apike.get() == True and self._flag_idpw.get() == False):
+            self._toggle_apikey_normal()
+            self._toggle_idpw_disabled()
+        elif(self._flag_apike.get() == False and self._flag_idpw.get() == True):
+            self._toggle_apikey_disabled()
+            self._toggle_idpw_normal()
+        elif(self._flag_apike.get() == True and self._flag_idpw.get() == True):
+            print('error')
+        else:
+            print('????')
 
 root = tk.Tk()
 root.geometry('1080x680')
