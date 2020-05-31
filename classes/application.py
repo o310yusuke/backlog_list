@@ -73,16 +73,22 @@ class Application(tk.Frame):
         connecting_way_inputarea_frame.pack(side='left', padx=5)
 
         #### APIKey入力エリア
-        apikey_inputarea_frame = tk.Frame(connecting_way_inputarea_frame)
-        apikey_inputarea_frame.pack(anchor=tk.W)
         ##### APIKeyパターン
-        checkbox_apikey = tk.Checkbutton(
-            apikey_inputarea_frame, text=u'API Key→', command=None
+        apikey_inputarea_labelframe = tk.LabelFrame(
+            connecting_way_inputarea_frame,
+            text='apikey',
+            padx=10, pady=10,
         )
-        checkbox_apikey.pack(side='left')
-        # labelframe_apikey = tk.LabelFrame(setting_frame, labelwidget=checkbox_apikey)
-        # labelframe_apikey.pack(anchor=tk.W)
-        entry_apikey = tk.Entry(apikey_inputarea_frame, width=20)
+        checkbox_apikey = tk.Checkbutton(
+            apikey_inputarea_labelframe, 
+            text=u'API Key', command=None
+        )
+        apikey_inputarea_labelframe['labelwidget'] = checkbox_apikey
+        apikey_inputarea_labelframe.pack(anchor=tk.W)
+
+        label_apikey = tk.Label(apikey_inputarea_labelframe, text=u'API Key：')
+        label_apikey.pack(side='left')
+        entry_apikey = tk.Entry(apikey_inputarea_labelframe, width=20)
         entry_apikey.pack(side='left')
 
         #### ID/PW入力エリア
