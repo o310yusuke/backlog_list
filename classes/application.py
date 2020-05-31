@@ -12,9 +12,12 @@ class Application(tk.Frame):
     _checkbox_apikey = None
     _checkbox_idpw = None
 
+    _entry_target_pj = None
     _entry_apikey = None
     _entry_id = None
     _entry_pw = None
+
+    _message_frame = None
 
     def __init__(self, master=None, title=None):
         super().__init__(master)
@@ -35,6 +38,7 @@ class Application(tk.Frame):
         self.create_header()
         self.create_setting()
         self.create_button()
+        self.create_error_msg()
         self.create_result()
 
     # ----------
@@ -69,9 +73,9 @@ class Application(tk.Frame):
         target_pj_inputarea_frame.pack(anchor=tk.W)
 
         label_target_pj = tk.Label(target_pj_inputarea_frame, text=u'対象PJID：')
-        entry_target_pj = tk.Entry(target_pj_inputarea_frame, width=10)
+        self._entry_target_pj = tk.Entry(target_pj_inputarea_frame, width=10)
         label_target_pj.pack(side='left')
-        entry_target_pj.pack(side='left')
+        self._entry_target_pj.pack(side='left')
 
         ## 接続方法エリア
         connecting_way_frame = tk.Frame(inputarea_frame)
@@ -135,15 +139,19 @@ class Application(tk.Frame):
         # ボタン配置
         button_search = tk.Button(
             button_frame, text=u'検索', bg='#D4E6F1',
-            command=None
+            command=self._command_search
         )
         button_search.pack(side='left', padx=10)
 
         button_exit = tk.Button(
             button_frame, text=u'終了', bg='#ABB2B9',
-            command=self.command_exit
+            command=self._command_exit
         )
         button_exit.pack(side='right', padx=10)
+
+    def create_error_msg(self):
+        self._message_frame = tk.Frame(self.master)
+        self._message_frame.pack(anchor=tk.W, padx=2, pady=5)
 
     def create_result(self):
         result_frame = tk.Frame(self.master)
@@ -174,7 +182,7 @@ class Application(tk.Frame):
 
     # ----------
     # 以下は、各パーツの動作
-    def command_exit(self):
+    def _command_exit(self):
         self.master.quit()
 
     def _toggle_apikey_normal(self):
@@ -211,6 +219,51 @@ class Application(tk.Frame):
             print('error')
         else:
             print('????')
+
+    def _command_search(self):
+        self._destroy_error_msgs()
+        self._check_entry()
+
+    def _destroy_error_msgs(self):
+        children = self._message_frame.winfo_children()
+        for child in children:
+            child.destroy()
+
+    def _check_entry(self):
+        error_msgs = []
+
+        # 入力チェック
+        trimed_target_pj = self._entry_target_pj.get().strip()
+        if(len(trimed_target_pj) == 0):
+            error_msgs.append(u'対象PJIDが未入力')
+
+        if(self._flag_apike.get() == True and self._flag_idpw.get() == False):
+            # API
+            trimed_apikey = self._entry_apikey.get().strip()
+            if(len(trimed_apikey) == 0):
+                error_msgs.append(u'ApiKeyが未入力')
+        elif(self._flag_apike.get() == False and self._flag_idpw.get() == True):
+            # ID/PW
+            trimed_id = self._entry_id.get().strip()
+            if(len(trimed_id) == 0):
+                error_msgs.append(u'IDが未入力')
+
+            trimed_pw = self._entry_pw.get().strip()
+            if(len(trimed_pw) == 0):
+                error_msgs.append(u'PWが未入力')
+        elif(self._flag_apike.get() == False and self._flag_idpw.get() == False):
+            error_msgs.append(u'接続方法が未選択')
+        else:
+            error_msgs.append(u'想定外のエラーが発生')
+
+        for error_msg in error_msgs:
+            label_msg = tk.Label(
+                self._message_frame,
+                text=u'・' + error_msg,
+                fg='#E91E63'
+            )
+            label_msg.pack()
+
 
 root = tk.Tk()
 root.geometry('1080x680')
