@@ -126,7 +126,7 @@ class Application(tk.Frame):
 
         button_exit = tk.Button(
             button_frame, text=u'終了', bg='#ABB2B9',
-            command=None
+            command=self.master.destroy
         )
         button_exit.pack(side='right', padx=10)
 
