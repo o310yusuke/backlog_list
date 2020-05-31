@@ -76,7 +76,7 @@ class Application(tk.Frame):
         ##### APIKeyパターン
         apikey_inputarea_labelframe = tk.LabelFrame(
             connecting_way_inputarea_frame,
-            text='apikey',
+            text=u'apikey',
             padx=10, pady=10,
         )
         checkbox_apikey = tk.Checkbutton(
@@ -88,21 +88,27 @@ class Application(tk.Frame):
 
         label_apikey = tk.Label(apikey_inputarea_labelframe, text=u'API Key：')
         label_apikey.pack(side='left')
-        entry_apikey = tk.Entry(apikey_inputarea_labelframe, width=20)
+        entry_apikey = tk.Entry(apikey_inputarea_labelframe, width=40)
         entry_apikey.pack(side='left')
 
         #### ID/PW入力エリア
         ##### ID/PWパターン
-        idpw_inputarea_frame = tk.Frame(connecting_way_inputarea_frame)
-        idpw_inputarea_frame.pack(anchor=tk.W)
-        checkbox_idpw = tk.Checkbutton(
-            idpw_inputarea_frame, text=u'ID/PW→', command=None
+        idpw_inputarea_labelframe = tk.LabelFrame(
+            connecting_way_inputarea_frame,
+            text=u'id/pw',
+            padx=10, pady=10,
         )
-        checkbox_idpw.pack(side='left')
-        label_id = tk.Label(idpw_inputarea_frame, text=u'ID：')
-        entry_id = tk.Entry(idpw_inputarea_frame, width=10)
-        label_pw = tk.Label(idpw_inputarea_frame, text=u'PW：')
-        entry_pw = tk.Entry(idpw_inputarea_frame, width=20)
+        checkbox_idpw = tk.Checkbutton(
+            idpw_inputarea_labelframe,
+            text=u'ID/PW', command=None
+        )
+        idpw_inputarea_labelframe['labelwidget'] = checkbox_idpw
+        idpw_inputarea_labelframe.pack(anchor=tk.W)
+
+        label_id = tk.Label(idpw_inputarea_labelframe, text=u'ID：')
+        entry_id = tk.Entry(idpw_inputarea_labelframe, width=20)
+        label_pw = tk.Label(idpw_inputarea_labelframe, text=u'PW：')
+        entry_pw = tk.Entry(idpw_inputarea_labelframe, width=20)
         label_id.pack(side='left')
         entry_id.pack(side='left')
         label_pw.pack(side='left')
