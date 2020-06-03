@@ -1,8 +1,10 @@
 # coding: utf-8
 
+import datetime
 import tkinter as tk
-from tkinter import font
-from tkinter import ttk
+from tkinter import font, ttk
+
+import requests
 
 class Application(tk.Frame):
     # プライベート変数
@@ -18,6 +20,8 @@ class Application(tk.Frame):
     _entry_pw = None
 
     _message_frame = None
+
+    _host = 'https://xxxxxxxxxx.backlog.jp'
 
     def __init__(self, master=None, title=None):
         super().__init__(master)
@@ -216,13 +220,18 @@ class Application(tk.Frame):
             self._toggle_apikey_disabled()
             self._toggle_idpw_normal()
         elif(self._flag_apike.get() == True and self._flag_idpw.get() == True):
-            print('error')
+            print(u'想定外のエラーが発生')
         else:
-            print('????')
+            print(u'発生するはずのない条件分岐')
 
     def _command_search(self):
         self._destroy_error_msgs()
-        self._check_entry()
+        if(self._check_entry()):
+            # 入力エラーなし
+            self._get_issues()
+        else:
+            # 入力エラーあり
+            pass
 
     def _destroy_error_msgs(self):
         children = self._message_frame.winfo_children()
@@ -263,6 +272,78 @@ class Application(tk.Frame):
                 fg='#E91E63'
             )
             label_msg.pack()
+
+        result_flag = tk.BooleanVar()
+        if(len(error_msgs) == 0):
+            # 入力エラーなし
+            result_flag.set(True)
+        else:
+            # 入力エラーあり
+            result_flag.set(False)
+
+        return result_flag.get()
+
+    def _get_issues(self):
+        trimed_target_pj = self._entry_target_pj.get().strip()
+
+        results = []
+        if(self._flag_apike.get() == True and self._flag_idpw.get() == False):
+            # APIKey選択時
+            trimed_apikey = self._entry_apikey.get().strip()
+            results = self._get_issues_apikey(pjid=trimed_target_pj, apikey=trimed_apikey)
+        elif(self._flag_apike.get() == False and self._flag_idpw.get() == True):
+            # ID/PW選択時
+            trimed_id = self._entry_id.get().strip()
+            trimed_pw = self._entry_pw.get().strip()
+            results = self._get_issues_idpw(pjid=trimed_target_pj, id=trimed_id, pw=trimed_pw)
+        else:
+            print(u'想定外のエラー')
+
+        # 結果を表形式で表示する
+        for index, result in enumerate(results):
+            print('◆ ' + str(index+1) + '件目')
+            print(result['issueKey'] + '：' + result['summary'])
+            print('担当者：' + result['assignee']['name'] + '/ 作成者：' + result['createdUser']['name'])
+            print('対応期限：' + result['dueDate'])
+            print('----------------------------------------')
+        pass
+
+    def _get_count_apikey(self, pjid=None, apikey=None):
+        url_count = '/api/v2/issues/count'
+
+        today = datetime.date.today()
+
+        params = {
+            'apiKey' : apikey,
+            'projectId[]' : pjid,
+            'statusId[]' : [1,2,3], # 完了以外
+            'dueDateUntil' : today,
+            'sort' : 'dueDate',
+        }
+
+        response_count = requests.get(self._host + url_count, params=params)
+        return response_count.json()
+
+
+    def _get_issues_apikey(self, pjid=None, apikey=None):
+        url_issues = '/api/v2/issues'
+
+        today = datetime.date.today()
+
+        params = {
+            'apiKey' : apikey,
+            'projectId[]' : pjid,
+            'statusId[]' : [1,2,3], # 完了以外
+            'dueDateUntil' : today,
+            'sort' : 'dueDate',
+        }
+
+        response_issues = requests.get(self._host + url_issues, params=params)
+        return response_issues.json()
+
+    def _get_issues_idpw(self, pjid=None, id=None, pw=None):
+        return 'idpw'
+
 
 
 root = tk.Tk()
