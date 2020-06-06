@@ -8,16 +8,8 @@ import requests
 
 class Application(tk.Frame):
     # プライベート変数
-    _flag_apike = None
-    _flag_idpw = None
-
-    _checkbox_apikey = None
-    _checkbox_idpw = None
-
     _entry_target_pj = None
     _entry_apikey = None
-    _entry_id = None
-    _entry_pw = None
 
     _message_frame = None
 
@@ -74,68 +66,22 @@ class Application(tk.Frame):
 
         ## 対象PJID入力エリア
         target_pj_inputarea_frame = tk.Frame(inputarea_frame)
-        target_pj_inputarea_frame.pack(anchor=tk.W)
+        target_pj_inputarea_frame.pack(anchor=tk.W, padx=10, pady=2)
 
         label_target_pj = tk.Label(target_pj_inputarea_frame, text=u'対象PJID：')
         self._entry_target_pj = tk.Entry(target_pj_inputarea_frame, width=10)
         label_target_pj.pack(side='left')
         self._entry_target_pj.pack(side='left')
 
-        ## 接続方法エリア
-        connecting_way_frame = tk.Frame(inputarea_frame)
-        connecting_way_frame.pack(anchor=tk.W)
-        label_connecting_way = tk.Label(connecting_way_frame, text=u'接続方法：')
-        label_connecting_way.pack(side='left', anchor=tk.NW)
+        ## APIKey入力エリア
+        apikey_inputarea_frame = tk.Frame(inputarea_frame)
+        apikey_inputarea_frame.pack(anchor=tk.W, padx=10, pady=2)
 
-        ### 接続方法入力エリア
-        connecting_way_inputarea_frame = tk.Frame(connecting_way_frame)
-        connecting_way_inputarea_frame.pack(side='left', padx=5)
-
-        #### APIKey入力エリア
-        ##### APIKeyパターン
-        apikey_inputarea_labelframe = tk.LabelFrame(
-            connecting_way_inputarea_frame,
-            text=u'apikey',
-            padx=10, pady=10,
-        )
-        self._flag_apike = tk.BooleanVar()
-        self._checkbox_apikey = tk.Checkbutton(
-            apikey_inputarea_labelframe, 
-            text=u'API Key', var=self._flag_apike,
-            command=self._command_checkbutton
-        )
-        apikey_inputarea_labelframe['labelwidget'] = self._checkbox_apikey
-        apikey_inputarea_labelframe.pack(anchor=tk.W)
-
-        label_apikey = tk.Label(apikey_inputarea_labelframe, text=u'API Key：')
+        label_apikey = tk.Label(apikey_inputarea_frame, text=u'API Key：')
         label_apikey.pack(side='left')
-        self._entry_apikey = tk.Entry(apikey_inputarea_labelframe, width=40)
+        self._entry_apikey = tk.Entry(apikey_inputarea_frame, width=40)
         self._entry_apikey.pack(side='left')
 
-        #### ID/PW入力エリア
-        ##### ID/PWパターン
-        idpw_inputarea_labelframe = tk.LabelFrame(
-            connecting_way_inputarea_frame,
-            text=u'id/pw',
-            padx=10, pady=10,
-        )
-        self._flag_idpw = tk.BooleanVar()
-        self._checkbox_idpw = tk.Checkbutton(
-            idpw_inputarea_labelframe,
-            text=u'ID/PW', var=self._flag_idpw,
-            command=self._command_checkbutton
-        )
-        idpw_inputarea_labelframe['labelwidget'] = self._checkbox_idpw
-        idpw_inputarea_labelframe.pack(anchor=tk.W)
-
-        label_id = tk.Label(idpw_inputarea_labelframe, text=u'ID：')
-        self._entry_id = tk.Entry(idpw_inputarea_labelframe, width=20)
-        label_pw = tk.Label(idpw_inputarea_labelframe, text=u'PW：')
-        self._entry_pw = tk.Entry(idpw_inputarea_labelframe, width=20)
-        label_id.pack(side='left')
-        self._entry_id.pack(side='left')
-        label_pw.pack(side='left')
-        self._entry_pw.pack(side='left')
 
     def create_button(self):
         button_frame = tk.Frame(self.master)
@@ -189,40 +135,6 @@ class Application(tk.Frame):
     def _command_exit(self):
         self.master.quit()
 
-    def _toggle_apikey_normal(self):
-        # apikey選択状態なので、apikeyを活性化
-        self._entry_apikey.configure(state='normal')
-        self._checkbox_apikey.configure(state='normal')
-
-    def _toggle_apikey_disabled(self):
-        # apiley非選択状態なので、apikeyを非活性
-        self._entry_apikey.configure(state='disabled')
-        self._checkbox_apikey.configure(state='disabled')
-
-    def _toggle_idpw_normal(self):
-        self._entry_id.configure(state='normal')
-        self._entry_pw.configure(state='normal')
-        self._checkbox_idpw.configure(state='normal')
-
-    def _toggle_idpw_disabled(self):
-        self._entry_id.configure(state='disabled')
-        self._entry_pw.configure(state='disabled')
-        self._checkbox_idpw.configure(state='disabled')
-
-    def _command_checkbutton(self):
-        if(self._flag_apike.get() == False and self._flag_idpw.get() == False):
-            self._toggle_apikey_normal()
-            self._toggle_idpw_normal()
-        elif(self._flag_apike.get() == True and self._flag_idpw.get() == False):
-            self._toggle_apikey_normal()
-            self._toggle_idpw_disabled()
-        elif(self._flag_apike.get() == False and self._flag_idpw.get() == True):
-            self._toggle_apikey_disabled()
-            self._toggle_idpw_normal()
-        elif(self._flag_apike.get() == True and self._flag_idpw.get() == True):
-            print(u'想定外のエラーが発生')
-        else:
-            print(u'発生するはずのない条件分岐')
 
     def _command_search(self):
         self._destroy_error_msgs()
@@ -246,24 +158,9 @@ class Application(tk.Frame):
         if(len(trimed_target_pj) == 0):
             error_msgs.append(u'対象PJIDが未入力')
 
-        if(self._flag_apike.get() == True and self._flag_idpw.get() == False):
-            # API
-            trimed_apikey = self._entry_apikey.get().strip()
-            if(len(trimed_apikey) == 0):
-                error_msgs.append(u'ApiKeyが未入力')
-        elif(self._flag_apike.get() == False and self._flag_idpw.get() == True):
-            # ID/PW
-            trimed_id = self._entry_id.get().strip()
-            if(len(trimed_id) == 0):
-                error_msgs.append(u'IDが未入力')
-
-            trimed_pw = self._entry_pw.get().strip()
-            if(len(trimed_pw) == 0):
-                error_msgs.append(u'PWが未入力')
-        elif(self._flag_apike.get() == False and self._flag_idpw.get() == False):
-            error_msgs.append(u'接続方法が未選択')
-        else:
-            error_msgs.append(u'想定外のエラーが発生')
+        trimed_apikey = self._entry_apikey.get().strip()
+        if(len(trimed_apikey) == 0):
+            error_msgs.append(u'ApiKeyが未入力')
 
         for error_msg in error_msgs:
             label_msg = tk.Label(
@@ -284,20 +181,10 @@ class Application(tk.Frame):
         return result_flag.get()
 
     def _get_issues(self):
-        trimed_target_pj = self._entry_target_pj.get().strip()
-
         results = []
-        if(self._flag_apike.get() == True and self._flag_idpw.get() == False):
-            # APIKey選択時
-            trimed_apikey = self._entry_apikey.get().strip()
-            results = self._get_issues_apikey(pjid=trimed_target_pj, apikey=trimed_apikey)
-        elif(self._flag_apike.get() == False and self._flag_idpw.get() == True):
-            # ID/PW選択時
-            trimed_id = self._entry_id.get().strip()
-            trimed_pw = self._entry_pw.get().strip()
-            results = self._get_issues_idpw(pjid=trimed_target_pj, id=trimed_id, pw=trimed_pw)
-        else:
-            print(u'想定外のエラー')
+        trimed_target_pj = self._entry_target_pj.get().strip()
+        trimed_apikey = self._entry_apikey.get().strip()
+        results = self._get_issues_apikey(pjid=trimed_target_pj, apikey=trimed_apikey)
 
         # 結果を表形式で表示する
         for index, result in enumerate(results):
@@ -341,8 +228,6 @@ class Application(tk.Frame):
         response_issues = requests.get(self._host + url_issues, params=params)
         return response_issues.json()
 
-    def _get_issues_idpw(self, pjid=None, id=None, pw=None):
-        return 'idpw'
 
 
 
