@@ -6,6 +6,9 @@ from tkinter import font, ttk
 
 import requests
 
+from classes.settings_file_controller import SettingsFileController
+
+
 class Application(tk.Frame):
     # プライベート変数
     _entry_spacename = None
@@ -16,12 +19,15 @@ class Application(tk.Frame):
 
     _host = 'https://{spacename}.backlog.jp'
 
+    _settings_dic = None
+
     def __init__(self, master=None, title=None):
         super().__init__(master)
         self.master = master
         self.title = title
         self.pack()
         self.application_settings()
+        self.read_settings_file()
         self.call_widgets()
 
     def application_settings(self):
@@ -29,6 +35,10 @@ class Application(tk.Frame):
         self.master.title(self.title)
         # アプリ全体のフォントサイズを指定
         self.master.option_add('*font', font.Font(size=10))
+
+    def read_settings_file(self):
+        controller = SettingsFileController()
+        self._settings_dic = controller.readSettings()
 
     # master上に各フレームを配置
     def call_widgets(self):
@@ -73,6 +83,11 @@ class Application(tk.Frame):
         self._entry_spacename = tk.Entry(target_spacename_frame, width=20)
         label_spacename.pack(side='left')
         self._entry_spacename.pack(side='left')
+        if (self._settings_dic != None):
+            self._entry_spacename.insert(
+                tk.END, 
+                self._settings_dic.get('spacename')
+            )
 
         ## 対象PJID入力エリア
         target_pj_inputarea_frame = tk.Frame(inputarea_frame)
@@ -82,6 +97,11 @@ class Application(tk.Frame):
         self._entry_target_pj = tk.Entry(target_pj_inputarea_frame, width=10)
         label_target_pj.pack(side='left')
         self._entry_target_pj.pack(side='left')
+        if (self._settings_dic != None):
+            self._entry_target_pj.insert(
+                tk.END, 
+                self._settings_dic.get('target_pj')
+            )
 
         ## APIKey入力エリア
         apikey_inputarea_frame = tk.Frame(inputarea_frame)
@@ -91,7 +111,11 @@ class Application(tk.Frame):
         label_apikey.pack(side='left')
         self._entry_apikey = tk.Entry(apikey_inputarea_frame, width=40)
         self._entry_apikey.pack(side='left')
-
+        if (self._settings_dic != None):
+            self._entry_apikey.insert(
+                tk.END, 
+                self._settings_dic.get('apikey')
+            )
 
     def create_button(self):
         button_frame = tk.Frame(self.master)
