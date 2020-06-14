@@ -8,12 +8,13 @@ import requests
 
 class Application(tk.Frame):
     # プライベート変数
+    _entry_spacename = None
     _entry_target_pj = None
     _entry_apikey = None
 
     _message_frame = None
 
-    _host = 'https://xxxxxxxxxx.backlog.jp'
+    _host = 'https://{spacename}.backlog.jp'
 
     def __init__(self, master=None, title=None):
         super().__init__(master)
@@ -63,6 +64,15 @@ class Application(tk.Frame):
         # 入力欄エリア
         inputarea_frame = tk.Frame(setting_frame)
         inputarea_frame.pack(anchor=tk.W)
+
+        ## スペース名入力エリア
+        target_spacename_frame = tk.Frame(inputarea_frame)
+        target_spacename_frame.pack(anchor=tk.W, padx=10, pady=2)
+
+        label_spacename = tk.Label(target_spacename_frame, text=u'対象スペース名：')
+        self._entry_spacename = tk.Entry(target_spacename_frame, width=20)
+        label_spacename.pack(side='left')
+        self._entry_spacename.pack(side='left')
 
         ## 対象PJID入力エリア
         target_pj_inputarea_frame = tk.Frame(inputarea_frame)
@@ -154,6 +164,10 @@ class Application(tk.Frame):
         error_msgs = []
 
         # 入力チェック
+        trimed_spacename = self._entry_spacename.get().strip()
+        if(len(trimed_spacename) == 0):
+            error_msgs.append(u'対象スペース名が未入力')
+
         trimed_target_pj = self._entry_target_pj.get().strip()
         if(len(trimed_target_pj) == 0):
             error_msgs.append(u'対象PJIDが未入力')
@@ -168,7 +182,7 @@ class Application(tk.Frame):
                 text=u'・' + error_msg,
                 fg='#E91E63'
             )
-            label_msg.pack()
+            label_msg.pack(anchor=tk.W)
 
         result_flag = tk.BooleanVar()
         if(len(error_msgs) == 0):
@@ -182,9 +196,14 @@ class Application(tk.Frame):
 
     def _get_issues(self):
         results = []
+        trimed_spacename = self._entry_spacename.get().strip()
         trimed_target_pj = self._entry_target_pj.get().strip()
         trimed_apikey = self._entry_apikey.get().strip()
-        results = self._get_issues_apikey(pjid=trimed_target_pj, apikey=trimed_apikey)
+        results = self._get_issues_apikey(
+            spacename=trimed_spacename, 
+            pjid=trimed_target_pj, 
+            apikey=trimed_apikey
+        )
 
         # 結果を表形式で表示する
         for index, result in enumerate(results):
@@ -195,7 +214,7 @@ class Application(tk.Frame):
             print('----------------------------------------')
         pass
 
-    def _get_count_apikey(self, pjid=None, apikey=None):
+    def _get_count_apikey(self, spacename=None, pjid=None, apikey=None):
         url_count = '/api/v2/issues/count'
 
         today = datetime.date.today()
@@ -207,12 +226,13 @@ class Application(tk.Frame):
             'dueDateUntil' : today,
             'sort' : 'dueDate',
         }
+        host = self._host.format(spacename=spacename)
 
-        response_count = requests.get(self._host + url_count, params=params)
+        response_count = requests.get(host + url_count, params=params)
         return response_count.json()
 
 
-    def _get_issues_apikey(self, pjid=None, apikey=None):
+    def _get_issues_apikey(self, spacename=None, pjid=None, apikey=None):
         url_issues = '/api/v2/issues'
 
         today = datetime.date.today()
@@ -224,8 +244,9 @@ class Application(tk.Frame):
             'dueDateUntil' : today,
             'sort' : 'dueDate',
         }
+        host = self._host.format(spacename=spacename)
 
-        response_issues = requests.get(self._host + url_issues, params=params)
+        response_issues = requests.get(host + url_issues, params=params)
         return response_issues.json()
 
 
