@@ -228,7 +228,10 @@ class Application(tk.Frame):
         }
         host = self._host.format(spacename=spacename)
 
-        response_count = requests.get(host + url_count, params=params)
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        response_count = requests.get(host + url_count, params=params, headers=headers)
         return response_count.json()
 
 
@@ -246,7 +249,10 @@ class Application(tk.Frame):
         }
         host = self._host.format(spacename=spacename)
 
-        response_issues = requests.get(host + url_issues, params=params)
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        response_issues = requests.get(host + url_issues, params=params, headers=headers)
         return response_issues.json()
 
 
