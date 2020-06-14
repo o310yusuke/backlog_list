@@ -174,6 +174,7 @@ class Application(tk.Frame):
         self._destroy_error_msgs()
         if(self._check_entry()):
             # 入力エラーなし
+            self._save_settings()
             self._get_issues()
         else:
             # 入力エラーあり
@@ -217,6 +218,18 @@ class Application(tk.Frame):
             result_flag.set(False)
 
         return result_flag.get()
+
+    def _save_settings(self):
+        trimed_spacename = self._entry_spacename.get().strip()
+        trimed_target_pj = self._entry_target_pj.get().strip()
+        trimed_apikey = self._entry_apikey.get().strip()
+
+        self._settings_dic['spacename'] = trimed_spacename
+        self._settings_dic['target_pj'] = trimed_target_pj
+        self._settings_dic['apikey'] = trimed_apikey
+
+        controller = SettingsFileController()
+        controller.writeSettings(self._settings_dic)
 
     def _get_issues(self):
         results = []
