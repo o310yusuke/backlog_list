@@ -6,6 +6,7 @@
 
 # python venv
 venv
+.venv
 
 settings.json
 settings.json.bk
