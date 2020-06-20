@@ -22,6 +22,7 @@ class Application(tk.Frame):
     _settings_dic = None
     _label_result_count = None
     _label_result_count_strvar = None
+    _treeview_result = None
 
     def __init__(self, master=None, title=None):
         super().__init__(master)
@@ -143,7 +144,7 @@ class Application(tk.Frame):
         result_frame = tk.Frame(self.master)
         result_frame.pack(anchor=tk.W, padx=2, pady=5)
 
-        area_title = tk.Label(result_frame, text=u'◆検索結果◆')
+        area_title = tk.Label(result_frame, text=u'◆検索結果◆　※一覧表示条件50件')
         area_title.pack(anchor=tk.W)
 
         self._label_result_count_strvar = tk.StringVar()
@@ -152,21 +153,30 @@ class Application(tk.Frame):
         self._label_result_count.pack(anchor=tk.W)
 
         # 検索結果テーブル
-        treeview_result = ttk.Treeview(result_frame)
-        treeview_result['columns'] = (1,2,3,4,5)
-        treeview_result['show'] = 'headings'
-        treeview_result.heading(1, text=u'チケット番号')
-        treeview_result.heading(2, text=u'タイトル')
-        treeview_result.heading(3, text=u'期限')
-        treeview_result.heading(4, text=u'担当者')
-        treeview_result.heading(5, text=u'作成者')
+        treeview_frame = tk.Frame(result_frame)
+        treeview_frame.pack(anchor=tk.W)
+        self._treeview_result = ttk.Treeview(treeview_frame, height=20)
+        self._treeview_result['columns'] = (1,2,3,4,5,6)
+        self._treeview_result['show'] = 'headings'
+        self._treeview_result.column(1, width=30)
+        self._treeview_result.column(2, width=140)
+        self._treeview_result.column(3, width=580)
+        self._treeview_result.column(4, width=80)
+        self._treeview_result.column(5, width=120)
+        self._treeview_result.column(6, width=120)
+        self._treeview_result.heading(1, text=u'No')
+        self._treeview_result.heading(2, text=u'チケット番号')
+        self._treeview_result.heading(3, text=u'タイトル')
+        self._treeview_result.heading(4, text=u'期限')
+        self._treeview_result.heading(5, text=u'担当者')
+        self._treeview_result.heading(6, text=u'作成者')
+        self._treeview_result.pack()
 
-        treeview_result.pack()
+        # 縦スクロールバー
+        yscrollbar = tk.Scrollbar(treeview_frame, orient= tk.VERTICAL, command= self._treeview_result.yview)
+        yscrollbar.place(relheight=0.95,relx=0.99,rely=0.05)
+        self._treeview_result.configure(yscroll= yscrollbar.set)
 
-        # test data
-        treeview_result.insert('', 'end', 
-            values=('PJ-NAME_0001', '【インフラ】テスト環境構築', '2020/04/05', '太郎', '花子')
-        )
 
     # ----------
     # 以下は、各パーツの動作
@@ -254,16 +264,21 @@ class Application(tk.Frame):
                 apikey=trimed_apikey
             )
             result_count = response_count.json().get('count')
-            result = u'合計： {result_count}'
-            self._label_result_count_strvar.set(result.format(result_count=result_count))
+            result_count_label = u'合計： {result_count}'
+            self._label_result_count_strvar.set(result_count_label.format(result_count=result_count))
 
             # 結果を表形式で表示する
             for index, result in enumerate(results_issues):
-                print('◆ ' + str(index+1) + '件目')
-                print(result['issueKey'] + '：' + result['summary'])
-                print('担当者：' + result['assignee']['name'] + '/ 作成者：' + result['createdUser']['name'])
-                print('対応期限：' + result['dueDate'])
-                print('----------------------------------------')
+                self._treeview_result.insert('', 0,
+                    values=(
+                        result_count - index,
+                        result['issueKey'],
+                        result['summary'],
+                        result['dueDate'][0:10],
+                        result['assignee']['name'],
+                        result['createdUser']['name']
+                    )
+                )
             pass
         else:
             self._destroy_error_msgs()
@@ -311,6 +326,7 @@ class Application(tk.Frame):
             'statusId[]' : [1,2,3], # 完了以外
             'dueDateUntil' : today,
             'sort' : 'dueDate',
+            'count' : 50
         }
         host = self._host.format(spacename=spacename)
 
@@ -324,6 +340,6 @@ class Application(tk.Frame):
 
 
 root = tk.Tk()
-root.geometry('1080x680')
+root.geometry('1080x720')
 app = Application(master=root, title=u'Backlog期限切れチケット抽出ツール')
 app.mainloop()
