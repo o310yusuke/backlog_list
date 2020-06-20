@@ -8,5 +8,4 @@
 venv
 .venv
 
-settings.json
-settings.json.bk
+settings.json*
