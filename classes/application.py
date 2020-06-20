@@ -186,6 +186,7 @@ class Application(tk.Frame):
 
     def _command_search(self):
         self._destroy_error_msgs()
+        self._treeview_result.delete(*self._treeview_result.get_children())
         if(self._check_entry()):
             # 入力エラーなし
             self._save_settings()
