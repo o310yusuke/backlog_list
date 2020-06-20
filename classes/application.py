@@ -20,6 +20,8 @@ class Application(tk.Frame):
     _host = 'https://{spacename}.backlog.jp'
 
     _settings_dic = None
+    _label_result_count = None
+    _label_result_count_strvar = None
 
     def __init__(self, master=None, title=None):
         super().__init__(master)
@@ -144,8 +146,10 @@ class Application(tk.Frame):
         area_title = tk.Label(result_frame, text=u'◆検索結果◆')
         area_title.pack(anchor=tk.W)
 
-        label_result_count = tk.Label(result_frame, text=u'合計：' + u'件')
-        label_result_count.pack(anchor=tk.W)
+        self._label_result_count_strvar = tk.StringVar()
+        self._label_result_count_strvar.set(u'合計：')
+        self._label_result_count = tk.Label(result_frame, textvariable=self._label_result_count_strvar)
+        self._label_result_count.pack(anchor=tk.W)
 
         # 検索結果テーブル
         treeview_result = ttk.Treeview(result_frame)
@@ -232,24 +236,48 @@ class Application(tk.Frame):
         controller.writeSettings(self._settings_dic)
 
     def _get_issues(self):
-        results = []
         trimed_spacename = self._entry_spacename.get().strip()
         trimed_target_pj = self._entry_target_pj.get().strip()
         trimed_apikey = self._entry_apikey.get().strip()
-        results = self._get_issues_apikey(
+
+        response_issues = self._get_issues_apikey(
             spacename=trimed_spacename, 
             pjid=trimed_target_pj, 
             apikey=trimed_apikey
         )
 
-        # 結果を表形式で表示する
-        for index, result in enumerate(results):
-            print('◆ ' + str(index+1) + '件目')
-            print(result['issueKey'] + '：' + result['summary'])
-            print('担当者：' + result['assignee']['name'] + '/ 作成者：' + result['createdUser']['name'])
-            print('対応期限：' + result['dueDate'])
-            print('----------------------------------------')
-        pass
+        results_issues = response_issues.json()
+        if (response_issues.status_code == 200):
+            response_count = self._get_count_apikey(
+                spacename=trimed_spacename, 
+                pjid=trimed_target_pj, 
+                apikey=trimed_apikey
+            )
+            result_count = response_count.json().get('count')
+            result = u'合計： {result_count}'
+            self._label_result_count_strvar.set(result.format(result_count=result_count))
+
+            # 結果を表形式で表示する
+            for index, result in enumerate(results_issues):
+                print('◆ ' + str(index+1) + '件目')
+                print(result['issueKey'] + '：' + result['summary'])
+                print('担当者：' + result['assignee']['name'] + '/ 作成者：' + result['createdUser']['name'])
+                print('対応期限：' + result['dueDate'])
+                print('----------------------------------------')
+            pass
+        else:
+            self._destroy_error_msgs()
+
+            errors = results.get('errors')
+            for error in errors:
+                label_msg = tk.Label(
+                    self._message_frame,
+                    text=u'・' + error.get('message'),
+                    fg='#E91E63'
+                )
+                label_msg.pack(anchor=tk.W)
+            pass
+
 
     def _get_count_apikey(self, spacename=None, pjid=None, apikey=None):
         url_count = '/api/v2/issues/count'
@@ -269,7 +297,7 @@ class Application(tk.Frame):
             'Content-Type': 'application/json'
         }
         response_count = requests.get(host + url_count, params=params, headers=headers)
-        return response_count.json()
+        return response_count
 
 
     def _get_issues_apikey(self, spacename=None, pjid=None, apikey=None):
@@ -290,7 +318,7 @@ class Application(tk.Frame):
             'Content-Type': 'application/json'
         }
         response_issues = requests.get(host + url_issues, params=params, headers=headers)
-        return response_issues.json()
+        return response_issues
 
 
 
