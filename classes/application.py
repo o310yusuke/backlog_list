@@ -268,7 +268,7 @@ class Application(tk.Frame):
         else:
             self._destroy_error_msgs()
 
-            errors = results.get('errors')
+            errors = results_issues.get('errors')
             for error in errors:
                 label_msg = tk.Label(
                     self._message_frame,
